@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>East Asian Typography History</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Outfit:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="app">
+        <header class="glass-panel">
+            <h1>East Asian Typography History</h1>
+            <div class="controls">
+                <button id="zoom-in" class="icon-btn" aria-label="Zoom In">+</button>
+                <button id="zoom-out" class="icon-btn" aria-label="Zoom Out">-</button>
+                <button id="reset-view" class="icon-btn" aria-label="Reset View">↺</button>
+                <button id="add-item-btn" class="primary-btn">Add New Item</button>
+            </div>
+        </header>
+
+        <main id="timeline-container">
+            <div id="timeline-content">
+                <!-- Timeline items will be injected here -->
+                <div id="timeline-axis"></div>
+            </div>
+        </main>
+
+        <!-- Edit/Add Modal -->
+        <div id="modal-overlay" class="hidden">
+            <div class="modal glass-panel">
+                <div class="modal-header">
+                    <h2 id="modal-title">Edit Item</h2>
+                    <button id="close-modal" class="close-btn">&times;</button>
+                </div>
+                <form id="item-form">
+                    <input type="hidden" name="_row" id="edit-row">
+
+                    <div class="form-group">
+                        <label for="nation">Nation</label>
+                        <select name="nation" id="edit-nation" required>
+                            <option value="Korea">Korea</option>
+                            <option value="China">China</option>
+                            <option value="Japan">Japan</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select name="category" id="edit-category" required>
+                            <option value="Typeface">Typeface</option>
+                            <option value="Technology">Technology</option>
+                            <option value="Publication">Publication</option>
+                            <option value="Person">Person</option>
+                            <option value="Event">Event</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="yr">Year</label>
+                        <input type="number" name="yr" id="edit-yr" required placeholder="e.g. 1443">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="item">Item Name</label>
+                        <input type="text" name="item" id="edit-item" required placeholder="Item Title">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="info">Description</label>
+                        <textarea name="info" id="edit-info" rows="3" placeholder="Details..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="link">Link</label>
+                        <input type="url" name="link" id="edit-link" placeholder="https://...">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cite">Citation</label>
+                        <input type="text" name="cite" id="edit-cite" placeholder="Source">
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" id="delete-btn" class="danger-btn hidden">Delete</button>
+                        <button type="submit" class="primary-btn">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="loading-indicator" class="hidden">
+            <div class="spinner"></div>
+            <span>Loading History...</span>
+        </div>
+    </div>
+
+    <script src="app.js?v=2"></script>
+</body>
+
+</html>
