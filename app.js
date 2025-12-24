@@ -74,10 +74,10 @@ function parseRows(headers, rows) {
 
 function useMockData() {
     state.items = [
-        { _row: 2, nation: 'Korea', category: 'Typeface', yr: 1443, item: 'Hunminjeongeum', info: 'Creation of Hangul', link: '', cite: 'Annals' },
-        { _row: 3, nation: 'China', category: 'Technology', yr: 1040, item: 'Bi Sheng', info: 'Movable Type', link: '', cite: 'History' },
-        { _row: 4, nation: 'Japan', category: 'Person', yr: 1957, item: 'Helvetica', info: 'Not Asian but test', link: '', cite: 'Wiki' },
-        { _row: 5, nation: 'Korea', category: 'Event', yr: 2000, item: 'Digital Era', info: 'Web fonts', link: '', cite: 'News' }
+        { _row: 2, nation: 'Korea', category: '서체', yr: 1443, item: 'Hunminjeongeum', info: 'Creation of Hangul', link: '', cite: 'Annals' },
+        { _row: 3, nation: 'China', category: '기술', yr: 1040, item: 'Bi Sheng', info: 'Movable Type', link: '', cite: 'History' },
+        { _row: 4, nation: 'Japan', category: '서체', yr: 1957, item: 'Helvetica', info: 'Not Asian but test', link: '', cite: 'Wiki' },
+        { _row: 5, nation: 'Korea', category: '경향', yr: 2000, item: 'Digital Era', info: 'Web fonts', link: '', cite: 'News' }
     ];
     calculateBounds();
     renderTimeline();
