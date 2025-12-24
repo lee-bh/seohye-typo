@@ -10,8 +10,13 @@ let state = {
     lastMouseX: 0,
     lastMouseY: 0,
     minYear: 1800,
-    maxYear: 2025
+    maxYear: 2025,
+    modifiedSignatures: new Set()
 };
+
+function getSignature(item) {
+    return `${item.yr}-${item.item}-${item.nation}`;
+}
 
 // DOM Elements
 const app = document.getElementById('app');
@@ -74,10 +79,10 @@ function parseRows(headers, rows) {
 
 function useMockData() {
     state.items = [
-        { _row: 2, nation: 'Korea', category: '서체', yr: 1443, item: 'Hunminjeongeum', info: 'Creation of Hangul', link: '', cite: 'Annals' },
-        { _row: 3, nation: 'China', category: '기술', yr: 1040, item: 'Bi Sheng', info: 'Movable Type', link: '', cite: 'History' },
-        { _row: 4, nation: 'Japan', category: '서체', yr: 1957, item: 'Helvetica', info: 'Not Asian but test', link: '', cite: 'Wiki' },
-        { _row: 5, nation: 'Korea', category: '경향', yr: 2000, item: 'Digital Era', info: 'Web fonts', link: '', cite: 'News' }
+        { _row: 2, nation: '한국', category: '서체', yr: 1443, item: 'Hunminjeongeum', info: 'Creation of Hangul', link: '', cite: 'Annals' },
+        { _row: 3, nation: '중국', category: '기술', yr: 1040, item: 'Bi Sheng', info: 'Movable Type', link: '', cite: 'History' },
+        { _row: 4, nation: '일본', category: '서체', yr: 1957, item: 'Helvetica', info: 'Not Asian but test', link: '', cite: 'Wiki' },
+        { _row: 5, nation: '한국', category: '경향', yr: 2000, item: 'Digital Era', info: 'Web fonts', link: '', cite: 'News' }
     ];
     calculateBounds();
     renderTimeline();
@@ -110,6 +115,10 @@ function renderTimeline() {
         const el = document.createElement('div');
         el.className = 'timeline-item';
 
+        if (state.modifiedSignatures.has(getSignature(item))) {
+            el.classList.add('modified-item');
+        }
+
         // Position Calculation
         // X: Proportional to screen width
         // Formula: (screenWidth / totalTime) * (itemYear - startYear)
@@ -123,15 +132,16 @@ function renderTimeline() {
         const x = (year - state.minYear) * pixelsPerYear;
 
         // Y: Stacked line by line
-        // Formula: index * rowHeight
+        // Formula: index * rowHeight + padding
         const rowHeight = 2; // Fixed height per item
-        const y = index * rowHeight;
+        const topPadding = 2;
+        const y = (index * rowHeight) + topPadding;
 
         el.style.left = `${x}px`;
         el.style.top = `${y}rem`;
 
         // Adjust width to fit better
-        el.style.width = '400px';
+        el.style.width = '600px';
 
         if (state.items.indexOf(item) < 3) {
             console.log(`Item ${state.items.indexOf(item)} pos:`, { x, y, year, min: state.minYear });
@@ -142,7 +152,7 @@ function renderTimeline() {
         const info = item.info || '';
         el.innerHTML = `
             <div class="item-title">${item.yr || ''} ${item.item || 'Unknown'} <span class="tag">${item.nation}</span> <span class="tag">${item.category}</span></div>
-            <div class="item-desc">${info.substring(0, 50)}${info.length > 50 ? '...' : ''}</div>
+            <div class="item-desc">${info}</div>
         `;
 
         el.addEventListener('click', (e) => {
@@ -154,25 +164,78 @@ function renderTimeline() {
     });
 
     console.log('Timeline children count:', timelineContent.children.length);
+    renderGrid();
 }
 
-function updateTransform() {
-    // Transform removed for new layout
-    // timelineContent.style.transform = `translate(${state.offsetX}px, ${state.offsetY}px) scale(${state.scale})`;
-}
+function renderGrid() {
+    const axis = document.getElementById('timeline-axis');
+    axis.innerHTML = '';
 
-function centerView() {
-    // Center view logic removed for new layout
+    // Grid range: Union of data range and 1800-2030
+    const minGridYear = Math.min(state.minYear, 1800);
+    const maxGridYear = Math.max(state.maxYear, 2030);
+
+    const startYear = Math.floor(minGridYear / 10) * 10;
+    const endYear = Math.ceil(maxGridYear / 10) * 10;
+    const step = 10;
+
+    // We need to calculate X based on the same formula as items
+    const totalTime = state.maxYear - state.minYear;
+    const screenWidth = window.innerWidth;
+    const pixelsPerYear = screenWidth / totalTime;
+
+    for (let y = startYear; y <= endYear; y += step) {
+        const line = document.createElement('div');
+        line.className = 'grid-line';
+
+        // X calculation
+        const x = (y - state.minYear) * pixelsPerYear;
+
+        line.style.left = `${x}px`;
+        axis.appendChild(line);
+    }
 }
 
 // Interactions
 function setupInteractions() {
-    // Pan/Zoom removed for new layout
+    // Drag Interaction
+    timelineContainer.addEventListener('mousedown', (e) => {
+        state.isDragging = true;
+        state.lastMouseX = e.clientX;
+        state.lastMouseY = e.clientY;
+        timelineContainer.style.cursor = 'grabbing';
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (!state.isDragging) return;
+
+        const deltaX = e.clientX - state.lastMouseX;
+        const deltaY = e.clientY - state.lastMouseY;
+
+        state.offsetX += deltaX;
+        state.offsetY += deltaY;
+
+        state.lastMouseX = e.clientX;
+        state.lastMouseY = e.clientY;
+
+        updateTransform();
+    });
+
+    window.addEventListener('mouseup', () => {
+        state.isDragging = false;
+        timelineContainer.style.cursor = 'grab';
+    });
 
     // Buttons
     document.getElementById('zoom-in').style.display = 'none';
     document.getElementById('zoom-out').style.display = 'none';
-    document.getElementById('reset-view').style.display = 'none';
+    document.getElementById('reset-view').onclick = () => {
+        state.offsetX = 0;
+        state.offsetY = 0;
+        state.scale = 1;
+        updateTransform();
+    };
+    document.getElementById('reset-view').style.display = 'flex'; // Show reset button
 
     document.getElementById('add-item-btn').onclick = () => {
         openEditModal(null);
@@ -182,6 +245,16 @@ function setupInteractions() {
     window.addEventListener('resize', () => {
         renderTimeline();
     });
+}
+
+function updateTransform() {
+    timelineContent.style.transform = `translate(${state.offsetX}px, ${state.offsetY}px) scale(${state.scale})`;
+
+    // Axis moves only in X
+    const axis = document.getElementById('timeline-axis');
+    if (axis) {
+        axis.style.transform = `translate(${state.offsetX}px, 0) scale(${state.scale})`;
+    }
 }
 
 // Modal & Form
@@ -251,6 +324,10 @@ async function sendData(action, data) {
 
         const result = await response.json();
         if (result.status === 'success') {
+            // Add signature to modified set
+            // data contains the fields we need
+            state.modifiedSignatures.add(getSignature(data));
+
             await loadData(); // Reload to see changes
         } else {
             alert('Error: ' + result.message);

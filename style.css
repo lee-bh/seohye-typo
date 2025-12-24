@@ -22,9 +22,8 @@ body {
     font-family: var(--font-main), var(--font-kr);
     background-color: var(--bg-color);
     color: var(--text-color);
-    overflow-y: auto;
-    /* Enable vertical scroll */
-    overflow-x: hidden;
+    overflow: hidden;
+    /* Disable scroll */
     height: 100vh;
     width: 100vw;
 }
@@ -105,13 +104,11 @@ button {
 
 /* Timeline Container */
 #timeline-container {
+    top: 0px;
     width: 100%;
-    min-height: 100vh;
+    height: 100vh;
     position: relative;
-    /* cursor: grab; Removed drag cursor */
-    /* overflow: hidden; Removed to allow scroll */
-    background-image:
-        radial-gradient(circle at center, rgba(100, 255, 218, 0.03) 0%, transparent 70%);
+    cursor: grab;
 }
 
 #timeline-container:active {
@@ -126,19 +123,7 @@ button {
     will-change: transform;
 }
 
-/* Timeline Axis */
-#timeline-axis {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border-left: 1px solid var(--glass-border);
-    /* Vertical line guide if needed, or remove */
-    pointer-events: none;
-    display: none;
-    /* Hiding axis for now as per new layout request */
-}
+
 
 /* Timeline Items */
 .timeline-item {
@@ -174,17 +159,20 @@ button {
 .item-title {
     font-weight: 600;
     margin-bottom: 8px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    /* Allow wrapping */
+}
+
+.modified-item .item-title,
+.modified-item .item-desc,
+.modified-item .item-year {
+    color: #0f0 !important;
 }
 
 .item-desc {
     display: none;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    /* Removed line-clamp to show full text */
+    word-wrap: break-word;
+    /* Ensure long words don't overflow */
 }
 
 .item-meta {
@@ -197,6 +185,27 @@ button {
     background: rgba(255, 255, 255, 0.1);
     padding: 2px 8px;
     border-radius: 4px;
+}
+
+/* Timeline Axis */
+#timeline-axis {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    transform-origin: 0 0;
+    will-change: transform;
+    z-index: 0;
+}
+
+.grid-line {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 1px;
+    background-color: #555;
 }
 
 /* Modal */
