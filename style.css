@@ -1,10 +1,7 @@
 :root {
     --bg-color: #0f0f13;
     --text-color: #e0e0e0;
-    --accent-color: #64ffda;
-    --glass-bg: rgba(255, 255, 255, 0.05);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --card-bg: rgba(30, 30, 35, 0.8);
+    --accent-color: #ffffff;
     --font-main: 'Outfit', sans-serif;
     --font-kr: 'Noto Sans KR', sans-serif;
 }
@@ -13,6 +10,12 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+}
+
+html {
+    font-size: 16px;
+    word-break: keep-all;
+    font-weight: 400;
 }
 
 body {
@@ -26,34 +29,21 @@ body {
     width: 100vw;
 }
 
-/* Glassmorphism Utilities */
-.glass-panel {
-    background: var(--glass-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--glass-border);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-}
-
 /* Header */
 header {
     position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
+    top: 0px;
+    right: 0;
     z-index: 100;
     padding: 12px 24px;
-    border-radius: 50px;
     display: flex;
     align-items: center;
     gap: 20px;
-    width: 90%;
-    max-width: 800px;
     justify-content: space-between;
 }
 
 h1 {
-    font-size: 1.2rem;
+    font-size: 1.5rem;
     font-weight: 600;
     letter-spacing: 0.5px;
     color: var(--accent-color);
@@ -81,7 +71,6 @@ button {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2rem;
 }
 
 .icon-btn:hover {
@@ -95,7 +84,6 @@ button {
     padding: 8px 16px;
     border-radius: 20px;
     font-weight: 600;
-    font-size: 0.9rem;
 }
 
 .primary-btn:hover {
@@ -109,7 +97,6 @@ button {
     padding: 8px 16px;
     border-radius: 20px;
     font-weight: 600;
-    font-size: 0.9rem;
 }
 
 .danger-btn:hover {
@@ -156,11 +143,10 @@ button {
 /* Timeline Items */
 .timeline-item {
     position: absolute;
-    width: 220px;
-    padding: 16px;
-    border-radius: 12px;
-    background: var(--card-bg);
-    border: 1px solid var(--glass-border);
+    width: 400px;
+    padding: 5px;
+
+
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.27), box-shadow 0.3s ease;
     cursor: pointer;
     user-select: none;
@@ -171,17 +157,21 @@ button {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     border-color: var(--accent-color);
     z-index: 10;
+    color: black;
+    background: white;
+}
+
+.timeline-item:hover .item-desc {
+    display: block;
 }
 
 .item-year {
-    font-size: 0.8rem;
     color: var(--accent-color);
     font-weight: 600;
     margin-bottom: 4px;
 }
 
 .item-title {
-    font-size: 1.1rem;
     font-weight: 600;
     margin-bottom: 8px;
     white-space: nowrap;
@@ -190,10 +180,7 @@ button {
 }
 
 .item-desc {
-    font-size: 0.85rem;
-    color: #aaa;
-    line-height: 1.4;
-    display: -webkit-box;
+    display: none;
     -webkit-line-clamp: 3;
     line-clamp: 3;
     -webkit-box-orient: vertical;
@@ -201,13 +188,12 @@ button {
 }
 
 .item-meta {
-    margin-top: 10px;
     display: flex;
     gap: 8px;
-    font-size: 0.75rem;
 }
 
 .tag {
+    font-size: 0.8rem;
     background: rgba(255, 255, 255, 0.1);
     padding: 2px 8px;
     border-radius: 4px;
@@ -269,8 +255,6 @@ button {
 
 .form-group label {
     display: block;
-    margin-bottom: 6px;
-    font-size: 0.85rem;
     color: #ccc;
 }
 
@@ -284,7 +268,6 @@ button {
     padding: 10px;
     color: #fff;
     font-family: inherit;
-    font-size: 0.95rem;
 }
 
 .form-group input:focus,

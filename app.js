@@ -9,7 +9,7 @@ let state = {
     isDragging: false,
     lastMouseX: 0,
     lastMouseY: 0,
-    minYear: 1000,
+    minYear: 1800,
     maxYear: 2025
 };
 
@@ -85,18 +85,18 @@ function useMockData() {
 
 function calculateBounds() {
     if (state.items.length === 0) {
-        state.minYear = 1900;
-        state.maxYear = 2025;
+        state.minYear = 1800;
+        state.maxYear = 2030;
         return;
     }
     const years = state.items.map(i => parseInt(i.yr) || 0).filter(y => y > 0);
     if (years.length === 0) {
-        state.minYear = 1900;
-        state.maxYear = 2025;
+        state.minYear = 1800;
+        state.maxYear = 2030;
         return;
     }
-    state.minYear = Math.min(...years) - 50;
-    state.maxYear = Math.max(...years) + 50;
+    state.minYear = Math.min(...years) - 10;
+    state.maxYear = Math.max(...years) + 10;
 }
 
 // Rendering
@@ -124,14 +124,14 @@ function renderTimeline() {
 
         // Y: Stacked line by line
         // Formula: index * rowHeight
-        const rowHeight = 60; // Fixed height per item
+        const rowHeight = 2; // Fixed height per item
         const y = index * rowHeight;
 
         el.style.left = `${x}px`;
-        el.style.top = `${y}px`;
+        el.style.top = `${y}rem`;
 
         // Adjust width to fit better
-        el.style.width = '200px';
+        el.style.width = '400px';
 
         if (state.items.indexOf(item) < 3) {
             console.log(`Item ${state.items.indexOf(item)} pos:`, { x, y, year, min: state.minYear });
@@ -141,13 +141,8 @@ function renderTimeline() {
         // Content
         const info = item.info || '';
         el.innerHTML = `
-            <div class="item-year">${item.yr || ''}</div>
-            <div class="item-title">${item.item || 'Unknown'}</div>
+            <div class="item-title">${item.yr || ''} ${item.item || 'Unknown'} <span class="tag">${item.nation}</span> <span class="tag">${item.category}</span></div>
             <div class="item-desc">${info.substring(0, 50)}${info.length > 50 ? '...' : ''}</div>
-            <div class="item-meta">
-                <span class="tag">${item.nation}</span>
-                <span class="tag">${item.category}</span>
-            </div>
         `;
 
         el.addEventListener('click', (e) => {

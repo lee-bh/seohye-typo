@@ -15,13 +15,13 @@
 
 <body>
     <div id="app">
-        <header class="glass-panel">
-            <h1>East Asian Typography History</h1>
+        <header>
+            <h1>동아시아 타이포그래피 연표</h1>
             <div class="controls">
                 <button id="zoom-in" class="icon-btn" aria-label="Zoom In">+</button>
                 <button id="zoom-out" class="icon-btn" aria-label="Zoom Out">-</button>
                 <button id="reset-view" class="icon-btn" aria-label="Reset View">↺</button>
-                <button id="add-item-btn" class="primary-btn">Add New Item</button>
+                <button id="add-item-btn" class="primary-btn">신규추가</button>
             </div>
         </header>
 
@@ -34,21 +34,21 @@
 
         <!-- Edit/Add Modal -->
         <div id="modal-overlay" class="hidden">
-            <div class="modal glass-panel">
+            <div class="modal">
                 <div class="modal-header">
-                    <h2 id="modal-title">Edit Item</h2>
+                    <h2 id="modal-title">항목 수정</h2>
                     <button id="close-modal" class="close-btn">&times;</button>
                 </div>
                 <form id="item-form">
                     <input type="hidden" name="_row" id="edit-row">
 
                     <div class="form-group">
-                        <label for="nation">Nation</label>
+                        <label for="nation">국가선택</label>
                         <select name="nation" id="edit-nation" required>
-                            <option value="Korea">Korea</option>
-                            <option value="China">China</option>
-                            <option value="Japan">Japan</option>
-                            <option value="Other">Other</option>
+                            <option value="Korea">한국</option>
+                            <option value="China">중국</option>
+                            <option value="Japan">일본</option>
+                            <option value="Other">기타(직접)</option>
                         </select>
                     </div>
 
