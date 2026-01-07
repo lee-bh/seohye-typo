@@ -216,14 +216,6 @@ function renderSheet2(pixelsPerYear) {
             label.classList.add('dragging');
         });
 
-        label.addEventListener('click', (e) => {
-            e.stopPropagation();
-            // Only open modal if it wasn't a significant drag
-            if (state.draggedDist < 5) {
-                openSheet2Modal(item);
-            }
-        });
-
         timelineContent.appendChild(label);
     });
 }
@@ -355,8 +347,11 @@ function setupInteractions() {
             if (newLayer !== parseInt(item.layer)) {
                 item.layer = newLayer;
                 await updateItemLayer(item._row, newLayer);
+            } else if (state.draggedDist < 5) {
+                // It was a click, not a significant drag
+                openSheet2Modal(item);
             } else {
-                // Snap back if no change
+                // Snap back if no change but was a drag
                 renderTimeline();
             }
 
