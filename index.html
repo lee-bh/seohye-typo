@@ -21,6 +21,7 @@
                 <button id="zoom-in" class="icon-btn" aria-label="Zoom In">+</button>
                 <button id="zoom-out" class="icon-btn" aria-label="Zoom Out">-</button>
                 <button id="reset-view" class="icon-btn" aria-label="Reset View">↺</button>
+                <button id="add-sheet2-btn" class="primary-btn">시대상 신규</button>
                 <button id="add-item-btn" class="primary-btn">신규추가</button>
             </div>
         </header>
@@ -111,6 +112,55 @@
         <div id="loading-indicator" class="hidden">
             <div class="spinner"></div>
             <span>Loading History...</span>
+        </div>
+    </div>
+
+    <!-- Sheet2 Modal -->
+    <div id="modal-overlay-s2" class="hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modal-title-s2">시대상 추가/수정</h2>
+                <button id="close-modal-s2" class="close-btn">&times;</button>
+            </div>
+            <form id="item-form-s2">
+                <input type="hidden" name="_row" id="edit-row-s2">
+                <input type="hidden" name="sheet" value="sheet2">
+
+                <div class="form-group">
+                    <label for="country">국가 (Country)</label>
+                    <input type="text" name="country" id="edit-country-s2" required placeholder="e.g. 한국">
+                </div>
+
+                <div class="form-group">
+                    <label for="theme">대주제 (Theme)</label>
+                    <input type="text" name="theme" id="edit-theme-s2" required placeholder="e.g. 왕조">
+                </div>
+
+                <div class="form-group">
+                    <label for="begin">시작년도 (Begin Year)</label>
+                    <input type="number" name="begin" id="edit-begin-s2" required placeholder="e.g. 1392">
+                </div>
+
+                <div class="form-group">
+                    <label for="end">종료년도 (End Year)</label>
+                    <input type="number" name="end" id="edit-end-s2" required placeholder="e.g. 1910">
+                </div>
+
+                <div class="form-group">
+                    <label for="layer">레이어 (Layer 1-12)</label>
+                    <input type="number" name="layer" id="edit-layer-s2" required min="1" max="12" placeholder="1-12">
+                </div>
+
+                <div class="form-group">
+                    <label for="title">내용 (Title)</label>
+                    <input type="text" name="title" id="edit-title-s2" required placeholder="e.g. 조선시대">
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" id="delete-btn-s2" class="danger-btn hidden">Delete</button>
+                    <button type="submit" class="primary-btn">Save Changes</button>
+                </div>
+            </form>
         </div>
     </div>
 

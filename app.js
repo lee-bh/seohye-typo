@@ -8,7 +8,8 @@ let state = {
     offsetX: 0,
     offsetY: 0,
     isDragging: false,
-    isItemDragging: false, // New state for item dragging
+    isItemDragging: false,
+    draggedDist: 0, // Track drag distance
     draggingEl: null,
     draggingItem: null,
     startY: 0,
@@ -198,15 +199,24 @@ function renderSheet2(pixelsPerYear) {
             <span class="s2-title">${item.title}</span>
         `;
 
-        // DRAG AND DROP
+        // DRAG AND DROP & CLICK
         label.addEventListener('mousedown', (e) => {
             e.stopPropagation();
             state.isItemDragging = true;
+            state.draggedDist = 0; // Reset distance
             state.draggingEl = label;
             state.draggingItem = item;
             state.startY = e.clientY;
             state.startLayer = layer;
             label.classList.add('dragging');
+        });
+
+        label.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Only open modal if it wasn't a significant drag
+            if (state.draggedDist < 5) {
+                openSheet2Modal(item);
+            }
         });
 
         timelineContent.appendChild(label);
@@ -292,7 +302,10 @@ function setupInteractions() {
 
     window.addEventListener('mousemove', (e) => {
         if (state.isItemDragging) {
-            const deltaY = (e.clientY - state.startY) / state.scale;
+            const deltaYRaw = e.clientY - state.startY;
+            state.draggedDist += Math.abs(deltaYRaw);
+
+            const deltaY = deltaYRaw / state.scale;
             const currentY = ((state.draggingItem.layer - 1) * 40 + 60) + deltaY;
 
             state.draggingEl.style.top = `${currentY}px`;
@@ -362,6 +375,10 @@ function setupInteractions() {
     };
     document.getElementById('reset-view').style.display = 'flex'; // Show reset button
 
+    document.getElementById('add-sheet2-btn').onclick = () => {
+        openSheet2Modal(null);
+    };
+
     document.getElementById('add-item-btn').onclick = () => {
         openEditModal(null);
     };
@@ -410,22 +427,67 @@ function openEditModal(item) {
     modalOverlay.classList.remove('hidden');
 }
 
+function openSheet2Modal(item) {
+    const modalOverlayS2 = document.getElementById('modal-overlay-s2');
+    const modalTitleS2 = document.getElementById('modal-title-s2');
+    const deleteBtnS2 = document.getElementById('delete-btn-s2');
+    const formS2 = document.getElementById('item-form-s2');
+
+    if (item) {
+        modalTitleS2.textContent = '시대상 수정';
+        document.getElementById('edit-row-s2').value = item._row;
+        document.getElementById('edit-country-s2').value = item.country;
+        document.getElementById('edit-theme-s2').value = item.theme;
+        document.getElementById('edit-begin-s2').value = item.begin;
+        document.getElementById('edit-end-s2').value = item.end;
+        document.getElementById('edit-layer-s2').value = item.layer;
+        document.getElementById('edit-title-s2').value = item.title;
+        deleteBtnS2.classList.remove('hidden');
+
+        deleteBtnS2.onclick = () => deleteItem(item._row, 'sheet2');
+    } else {
+        modalTitleS2.textContent = '시대상 추가';
+        formS2.reset();
+        document.getElementById('edit-row-s2').value = '';
+        deleteBtnS2.classList.add('hidden');
+    }
+
+    modalOverlayS2.classList.remove('hidden');
+}
+
 function setupForm() {
+    // Sheet1 Close
     document.getElementById('close-modal').onclick = () => {
         modalOverlay.classList.add('hidden');
     };
 
-    modalOverlay.addEventListener('click', (e) => {
-        if (e.target === modalOverlay) {
-            modalOverlay.classList.add('hidden');
-        }
+    // Sheet2 Close
+    document.getElementById('close-modal-s2').onclick = () => {
+        document.getElementById('modal-overlay-s2').classList.add('hidden');
+    };
+
+    // Overlay clicks
+    window.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) modalOverlay.classList.add('hidden');
+        const s2Overlay = document.getElementById('modal-overlay-s2');
+        if (e.target === s2Overlay) s2Overlay.classList.add('hidden');
     });
 
+    // Sheet1 Submit
     itemForm.onsubmit = async (e) => {
         e.preventDefault();
         const formData = new FormData(itemForm);
         const data = Object.fromEntries(formData.entries());
+        const action = data._row ? 'update' : 'create';
+        await sendData(action, data);
+    };
 
+    // Sheet2 Submit
+    const formS2 = document.getElementById('item-form-s2');
+    formS2.onsubmit = async (e) => {
+        e.preventDefault();
+        const formData = new FormData(formS2);
+        const data = Object.fromEntries(formData.entries());
         const action = data._row ? 'update' : 'create';
         await sendData(action, data);
     };
@@ -496,15 +558,17 @@ async function sendData(action, data) {
     }
 }
 
-async function deleteItem(row) {
+async function deleteItem(row, sheetName = 'sheet1') {
     if (!confirm('Are you sure you want to delete this item?')) return;
 
     showLoading(true);
     modalOverlay.classList.add('hidden');
+    document.getElementById('modal-overlay-s2').classList.add('hidden');
 
     try {
         const params = new URLSearchParams();
         params.append('_row', row);
+        params.append('sheet', sheetName);
 
         const response = await fetch(`${API_URL}?action=delete`, {
             method: 'POST',

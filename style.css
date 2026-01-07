@@ -16,6 +16,7 @@ html {
     font-size: 16px;
     word-break: keep-all;
     font-weight: 400;
+    user-select: none;
 }
 
 body {
@@ -269,7 +270,8 @@ button {
 }
 
 /* Modal */
-#modal-overlay {
+#modal-overlay,
+#modal-overlay-s2 {
     position: fixed;
     top: 0;
     left: 0;
@@ -285,7 +287,8 @@ button {
     transition: opacity 0.3s ease;
 }
 
-#modal-overlay.hidden {
+#modal-overlay.hidden,
+#modal-overlay-s2.hidden {
     opacity: 0;
     pointer-events: none;
 }
@@ -300,7 +303,8 @@ button {
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-#modal-overlay.hidden .modal {
+#modal-overlay.hidden .modal,
+#modal-overlay-s2.hidden .modal {
     transform: translateY(20px);
 }
 
