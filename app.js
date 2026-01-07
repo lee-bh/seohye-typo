@@ -104,7 +104,8 @@ function useMockData() {
         { country: '한국', theme: '활자', begin: 1434, end: 1450, layer: 2, title: '갑인자' },
         { country: '중국', theme: '왕조', begin: 1368, end: 1644, layer: 3, title: '명나라' },
         { country: '중국', theme: '왕조', begin: 1644, end: 1912, layer: 4, title: '청나라' },
-        { country: '일본', theme: '막부', begin: 1603, end: 1868, layer: 5, title: '에도 막부' }
+        { country: '일본', theme: '막부', begin: 1603, end: 1868, layer: 5, title: '에도 막부' },
+        { country: '테스트', theme: '테스트', begin: 1950, end: null, layer: 6, title: '종료년도 없음 테스트' }
     ];
     calculateBounds();
     renderTimeline();
@@ -125,9 +126,12 @@ function calculateBounds() {
     });
     state.sheet2Items.forEach(i => {
         const b = parseInt(i.begin);
-        const e = parseInt(i.end);
-        if (!isNaN(b) && b > 0) years.push(b);
-        if (!isNaN(e) && e > 0) years.push(e);
+        let e = parseInt(i.end);
+        if (!isNaN(b) && b > 0) {
+            years.push(b);
+            if (isNaN(e)) e = b + 1;
+            years.push(e);
+        }
     });
 
     if (years.length === 0) {
@@ -171,10 +175,11 @@ function renderSheet2(pixelsPerYear) {
 
     state.sheet2Items.forEach(item => {
         const begin = parseInt(item.begin);
-        const end = parseInt(item.end);
+        let end = parseInt(item.end);
         const layer = parseInt(item.layer) || 1;
 
-        if (isNaN(begin) || isNaN(end)) return;
+        if (isNaN(begin)) return;
+        if (isNaN(end)) end = begin + 1;
 
         const xStart = (begin - state.minYear) * pixelsPerYear;
         const xEnd = (end - state.minYear) * pixelsPerYear;
