@@ -128,13 +128,15 @@ button {
 /* Timeline Items */
 .timeline-item {
     position: absolute;
-    width: 400px;
+    width: 800px;
     padding: 5px;
-
-
+    padding-left: 10px;
+    padding-bottom: 0px;
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.27), box-shadow 0.3s ease;
     cursor: pointer;
     user-select: none;
+    border-left: 2px solid var(--accent-color);
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .timeline-item:hover {
@@ -205,7 +207,65 @@ button {
     top: 0;
     height: 100%;
     width: 1px;
-    background-color: #555;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.layer-guide-line {
+    position: absolute;
+    left: 0;
+    width: 50000px;
+    /* Long enough to cover timeline */
+    height: 1px;
+    border-top: 1px solid #333;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Sheet2 Specific Styles */
+.sheet2-line {
+    position: absolute;
+    height: 2px;
+    background: var(--accent-color);
+    box-shadow: 0 0 10px var(--accent-color);
+    pointer-events: none;
+    z-index: 5;
+}
+
+.sheet2-label {
+    position: absolute;
+
+    font-size: 0.75rem;
+    pointer-events: auto;
+    /* Enable interaction */
+    cursor: grab;
+    /* Show grab cursor */
+    white-space: nowrap;
+    z-index: 6;
+    padding: 5px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 4px;
+}
+
+.sheet2-label.dragging {
+    opacity: 0.6;
+    cursor: grabbing;
+    z-index: 1000;
+}
+
+.s2-country {
+    font-weight: 700;
+    color: #555555;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+}
+
+.s2-theme {
+    font-style: italic;
+    color: #ccc;
+}
+
+.s2-title {
+    font-weight: 400;
+    color: #fff;
 }
 
 /* Modal */

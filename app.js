@@ -1,12 +1,18 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycbyiINN08iExnzgRMLgTNFxYy6VAPmgyZWZgjp-bIDub-oJyWmckij8m4dyv8X-JvO3-/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycby9dF0wokSZFkNVcWPD-67L4f0Em65wYh5PduxMkVqbpt1kOWjgNwwzKRmwZ6U7wkDH/exec';
 
 // State
 let state = {
-    items: [],
+    items: [], // Sheet1 data
+    sheet2Items: [], // Sheet2 data
     scale: 1,
     offsetX: 0,
     offsetY: 0,
     isDragging: false,
+    isItemDragging: false, // New state for item dragging
+    draggingEl: null,
+    draggingItem: null,
+    startY: 0,
+    startLayer: 0,
     lastMouseX: 0,
     lastMouseY: 0,
     minYear: 1800,
@@ -43,23 +49,30 @@ async function init() {
 async function loadData() {
     showLoading(true);
     try {
-        const response = await fetch(`${API_URL}?action=read`);
-        const result = await response.json();
+        // Fetch Sheet1
+        const res1 = await fetch(`${API_URL}?action=read&sheet=sheet1`);
+        const json1 = await res1.json();
 
-        if (result.status === 'success') {
-            console.log('Raw rows:', result.data.rows);
-            state.items = parseRows(result.data.headers, result.data.rows);
-            console.log('Parsed items:', state.items);
+        // Fetch Sheet2
+        const res2 = await fetch(`${API_URL}?action=read&sheet=sheet2`);
+        const json2 = await res2.json();
+
+        if (json1.status === 'success' && json2.status === 'success') {
+            state.items = parseRows(json1.data.headers, json1.data.rows);
+            state.sheet2Items = parseRows(json2.data.headers, json2.data.rows);
+
+            console.log('Sheet1 items:', state.items);
+            console.log('Sheet2 items:', state.sheet2Items);
+
             calculateBounds();
             renderTimeline();
         } else {
-            console.error('Error loading data:', result.message);
+            console.error('Error loading data:', json1.message || json2.message);
             alert('Failed to load data. Please check console.');
         }
     } catch (error) {
         console.error('Fetch error:', error);
-        // Mock data for development if CORS fails
-        console.warn('Using mock data due to fetch error (likely CORS)');
+        console.warn('Using mock data due to fetch error');
         useMockData();
     } finally {
         showLoading(false);
@@ -84,17 +97,38 @@ function useMockData() {
         { _row: 4, nation: '일본', category: '서체', yr: 1957, item: 'Helvetica', info: 'Not Asian but test', link: '', cite: 'Wiki' },
         { _row: 5, nation: '한국', category: '경향', yr: 2000, item: 'Digital Era', info: 'Web fonts', link: '', cite: 'News' }
     ];
+    state.sheet2Items = [
+        { country: '한국', theme: '왕조', begin: 1392, end: 1910, layer: 1, title: '조선시대' },
+        { country: '한국', theme: '활자', begin: 1403, end: 1420, layer: 2, title: '계미자' },
+        { country: '한국', theme: '활자', begin: 1434, end: 1450, layer: 2, title: '갑인자' },
+        { country: '중국', theme: '왕조', begin: 1368, end: 1644, layer: 3, title: '명나라' },
+        { country: '중국', theme: '왕조', begin: 1644, end: 1912, layer: 4, title: '청나라' },
+        { country: '일본', theme: '막부', begin: 1603, end: 1868, layer: 5, title: '에도 막부' }
+    ];
     calculateBounds();
     renderTimeline();
 }
 
 function calculateBounds() {
-    if (state.items.length === 0) {
+    const allItems = [...state.items, ...state.sheet2Items];
+    if (allItems.length === 0) {
         state.minYear = 1800;
         state.maxYear = 2030;
         return;
     }
-    const years = state.items.map(i => parseInt(i.yr) || 0).filter(y => y > 0);
+
+    const years = [];
+    state.items.forEach(i => {
+        const y = parseInt(i.yr);
+        if (!isNaN(y) && y > 0) years.push(y);
+    });
+    state.sheet2Items.forEach(i => {
+        const b = parseInt(i.begin);
+        const e = parseInt(i.end);
+        if (!isNaN(b) && b > 0) years.push(b);
+        if (!isNaN(e) && e > 0) years.push(e);
+    });
+
     if (years.length === 0) {
         state.minYear = 1800;
         state.maxYear = 2030;
@@ -106,12 +140,86 @@ function calculateBounds() {
 
 // Rendering
 function renderTimeline() {
-    timelineContent.innerHTML = ''; // Clear content
+    timelineContent.innerHTML = '';
 
-    // Sort items by year for better stacking
-    state.items.sort((a, b) => (parseInt(a.yr) || 0) - (parseInt(b.yr) || 0));
+    // Calculate dynamic pixelsPerYear based on viewport
+    const totalTime = state.maxYear - state.minYear;
+    const screenWidth = window.innerWidth;
+    const pixelsPerYear = screenWidth / totalTime;
 
-    state.items.forEach((item, index) => {
+    // 1. Render Sheet2 (Top Section - 7 layers)
+    renderSheet2(pixelsPerYear);
+
+    // 2. Render Sheet1 (Bottom Section)
+    renderSheet1(pixelsPerYear);
+
+    renderGrid();
+}
+
+function renderSheet2(pixelsPerYear) {
+    const layerHeight = 40;
+    const topMargin = 60;
+
+    // Render 12 Horizontal Guide Lines
+    for (let i = 0; i < 12; i++) {
+        const guide = document.createElement('div');
+        guide.className = 'layer-guide-line';
+        guide.style.top = `${i * layerHeight + topMargin + 20}px`;
+        timelineContent.appendChild(guide);
+    }
+
+    state.sheet2Items.forEach(item => {
+        const begin = parseInt(item.begin);
+        const end = parseInt(item.end);
+        const layer = parseInt(item.layer) || 1;
+
+        if (isNaN(begin) || isNaN(end)) return;
+
+        const xStart = (begin - state.minYear) * pixelsPerYear;
+        const xEnd = (end - state.minYear) * pixelsPerYear;
+        const y = (layer - 1) * layerHeight + topMargin;
+
+        // Line
+        const line = document.createElement('div');
+        line.className = 'sheet2-line';
+        line.id = `line-${item._row}`; // Add ID to update line position during drag
+        line.style.left = `${xStart}px`;
+        line.style.top = `${y + 20}px`;
+        line.style.width = `${xEnd - xStart}px`;
+        timelineContent.appendChild(line);
+
+        // Label
+        const label = document.createElement('div');
+        label.className = 'sheet2-label';
+        label.style.left = `${xStart}px`;
+        label.style.top = `${y}px`;
+        label.innerHTML = `
+            <span class="s2-country">${item.country}</span>
+            <span class="s2-title">${item.title}</span>
+        `;
+
+        // DRAG AND DROP
+        label.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+            state.isItemDragging = true;
+            state.draggingEl = label;
+            state.draggingItem = item;
+            state.startY = e.clientY;
+            state.startLayer = layer;
+            label.classList.add('dragging');
+        });
+
+        timelineContent.appendChild(label);
+    });
+}
+
+function renderSheet1(pixelsPerYear) {
+    const sheet1TopOffset = 650; // Increased for 12 layers (12 * 40 + 60 + margin)
+
+    // Sort items by year
+    const sortedItems = [...state.items].sort((a, b) => (parseInt(a.yr) || 0) - (parseInt(b.yr) || 0));
+
+    sortedItems.forEach((item, index) => {
         const el = document.createElement('div');
         el.className = 'timeline-item';
 
@@ -119,36 +227,15 @@ function renderTimeline() {
             el.classList.add('modified-item');
         }
 
-        // Position Calculation
-        // X: Proportional to screen width
-        // Formula: (screenWidth / totalTime) * (itemYear - startYear)
-        const totalTime = state.maxYear - state.minYear;
-        const screenWidth = window.innerWidth;
-        const pixelsPerYear = screenWidth / totalTime;
-
         let year = parseInt(item.yr);
         if (isNaN(year)) year = state.minYear;
 
         const x = (year - state.minYear) * pixelsPerYear;
-
-        // Y: Stacked line by line
-        // Formula: index * rowHeight + padding
-        const rowHeight = 2; // Fixed height per item
-        const topPadding = 2;
-        const y = (index * rowHeight) + topPadding;
+        const y = sheet1TopOffset + (index * 45); // Simple vertical stacking
 
         el.style.left = `${x}px`;
-        el.style.top = `${y}rem`;
+        el.style.top = `${y}px`;
 
-        // Adjust width to fit better
-        el.style.width = '600px';
-
-        if (state.items.indexOf(item) < 3) {
-            console.log(`Item ${state.items.indexOf(item)} pos:`, { x, y, year, min: state.minYear });
-        }
-
-        // Content
-        // Content
         const info = item.info || '';
         el.innerHTML = `
             <div class="item-title">${item.yr || ''} ${item.item || 'Unknown'} <span class="tag">${item.nation}</span> <span class="tag">${item.category}</span></div>
@@ -156,15 +243,12 @@ function renderTimeline() {
         `;
 
         el.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent drag start
+            e.stopPropagation();
             openEditModal(item);
         });
 
         timelineContent.appendChild(el);
     });
-
-    console.log('Timeline children count:', timelineContent.children.length);
-    renderGrid();
 }
 
 function renderGrid() {
@@ -207,6 +291,19 @@ function setupInteractions() {
     });
 
     window.addEventListener('mousemove', (e) => {
+        if (state.isItemDragging) {
+            const deltaY = (e.clientY - state.startY) / state.scale;
+            const currentY = ((state.draggingItem.layer - 1) * 40 + 60) + deltaY;
+
+            state.draggingEl.style.top = `${currentY}px`;
+
+            // Sync line position
+            const line = document.getElementById(`line-${state.draggingItem._row}`);
+            if (line) line.style.top = `${currentY + 20}px`;
+
+            return;
+        }
+
         if (!state.isDragging) return;
 
         const deltaX = e.clientX - state.lastMouseX;
@@ -221,7 +318,35 @@ function setupInteractions() {
         updateTransform();
     });
 
-    window.addEventListener('mouseup', () => {
+    window.addEventListener('mouseup', async (e) => {
+        if (state.isItemDragging) {
+            state.isItemDragging = false;
+            const label = state.draggingEl;
+            const item = state.draggingItem;
+            label.classList.remove('dragging');
+
+            // Calculate final layer
+            const layerHeight = 40;
+            const topMargin = 60;
+            const finalY = parseFloat(label.style.top);
+            let newLayer = Math.round((finalY - topMargin) / layerHeight) + 1;
+
+            // Clamp 1-12
+            newLayer = Math.max(1, Math.min(12, newLayer));
+
+            if (newLayer !== parseInt(item.layer)) {
+                item.layer = newLayer;
+                await updateItemLayer(item._row, newLayer);
+            } else {
+                // Snap back if no change
+                renderTimeline();
+            }
+
+            state.draggingEl = null;
+            state.draggingItem = null;
+            return;
+        }
+
         state.isDragging = false;
         timelineContainer.style.cursor = 'grab';
     });
@@ -304,6 +429,37 @@ function setupForm() {
         const action = data._row ? 'update' : 'create';
         await sendData(action, data);
     };
+}
+
+async function updateItemLayer(row, newLayer) {
+    showLoading(true);
+    try {
+        const params = new URLSearchParams();
+        params.append('action', 'update');
+        params.append('sheet', 'sheet2');
+        params.append('_row', row);
+        params.append('layer', newLayer);
+
+        const response = await fetch(`${API_URL}`, {
+            method: 'POST',
+            body: params
+        });
+
+        const result = await response.json();
+        if (result.status === 'success') {
+            alert('변경완료');
+            await loadData(); // Reload for accuracy
+        } else {
+            alert('Error: ' + result.message);
+            renderTimeline(); // Reset view
+        }
+    } catch (error) {
+        console.error('Update error:', error);
+        alert('Failed to update layer.');
+        renderTimeline();
+    } finally {
+        showLoading(false);
+    }
 }
 
 async function sendData(action, data) {
