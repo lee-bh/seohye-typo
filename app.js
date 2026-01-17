@@ -170,7 +170,7 @@ function renderTimeline() {
 
 function renderSheet2(pixelsPerYear) {
     const layerHeight = 40;
-    const topMargin = 60;
+    const topMargin = 80;
 
     // Render 26 Horizontal Guide Lines
     for (let i = 0; i < 26; i++) {

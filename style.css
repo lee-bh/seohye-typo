@@ -213,7 +213,7 @@ button {
 
 .grid-year-label {
     position: absolute;
-    top: 10px;
+    top: 60px;
     font-size: 0.75rem;
     color: rgba(255, 255, 255, 0.5);
     font-weight: 600;
