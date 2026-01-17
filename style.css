@@ -211,6 +211,18 @@ button {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
+.grid-year-label {
+    position: absolute;
+    top: 10px;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 600;
+    pointer-events: none;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 2px;
+    border-radius: 4px;
+}
+
 .layer-guide-line {
     position: absolute;
     left: 0;

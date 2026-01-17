@@ -5,6 +5,7 @@ let state = {
     items: [], // Sheet1 data
     sheet2Items: [], // Sheet2 data
     scale: 1,
+    horizontalScale: 1, // Horizontal zoom scale
     offsetX: 0,
     offsetY: 0,
     isDragging: false,
@@ -126,7 +127,12 @@ function calculateBounds() {
     });
     state.sheet2Items.forEach(i => {
         const b = parseInt(i.begin);
-        let e = parseInt(i.end);
+        // Handle 'current' as 2026
+        let endValue = i.end;
+        if (endValue === 'current') {
+            endValue = 2026;
+        }
+        let e = parseInt(endValue);
         if (!isNaN(b) && b > 0) {
             years.push(b);
             if (isNaN(e)) e = b + 1;
@@ -147,12 +153,13 @@ function calculateBounds() {
 function renderTimeline() {
     timelineContent.innerHTML = '';
 
-    // Calculate dynamic pixelsPerYear based on viewport
+    // Calculate dynamic pixelsPerYear based on viewport and horizontal scale
     const totalTime = state.maxYear - state.minYear;
     const screenWidth = window.innerWidth;
-    const pixelsPerYear = screenWidth / totalTime;
+    const basePixelsPerYear = screenWidth / totalTime;
+    const pixelsPerYear = basePixelsPerYear * state.horizontalScale;
 
-    // 1. Render Sheet2 (Top Section - 7 layers)
+    // 1. Render Sheet2 (Top Section - 26 layers)
     renderSheet2(pixelsPerYear);
 
     // 2. Render Sheet1 (Bottom Section)
@@ -165,8 +172,8 @@ function renderSheet2(pixelsPerYear) {
     const layerHeight = 40;
     const topMargin = 60;
 
-    // Render 12 Horizontal Guide Lines
-    for (let i = 0; i < 12; i++) {
+    // Render 26 Horizontal Guide Lines
+    for (let i = 0; i < 26; i++) {
         const guide = document.createElement('div');
         guide.className = 'layer-guide-line';
         guide.style.top = `${i * layerHeight + topMargin + 20}px`;
@@ -175,7 +182,12 @@ function renderSheet2(pixelsPerYear) {
 
     state.sheet2Items.forEach(item => {
         const begin = parseInt(item.begin);
-        let end = parseInt(item.end);
+        // Handle 'current' as 2026
+        let endValue = item.end;
+        if (endValue === 'current') {
+            endValue = 2026;
+        }
+        let end = parseInt(endValue);
         const layer = parseInt(item.layer) || 1;
 
         if (isNaN(begin)) return;
@@ -221,7 +233,7 @@ function renderSheet2(pixelsPerYear) {
 }
 
 function renderSheet1(pixelsPerYear) {
-    const sheet1TopOffset = 650; // Increased for 12 layers (12 * 40 + 60 + margin)
+    const sheet1TopOffset = 1210; // Increased for 26 layers (26 * 40 + 60 + margin)
 
     // Sort items by year
     const sortedItems = [...state.items].sort((a, b) => (parseInt(a.yr) || 0) - (parseInt(b.yr) || 0));
@@ -270,10 +282,11 @@ function renderGrid() {
     const endYear = Math.ceil(maxGridYear / 10) * 10;
     const step = 10;
 
-    // We need to calculate X based on the same formula as items
+    // We need to calculate X based on the same formula as items (including horizontalScale)
     const totalTime = state.maxYear - state.minYear;
     const screenWidth = window.innerWidth;
-    const pixelsPerYear = screenWidth / totalTime;
+    const basePixelsPerYear = screenWidth / totalTime;
+    const pixelsPerYear = basePixelsPerYear * state.horizontalScale;
 
     for (let y = startYear; y <= endYear; y += step) {
         const line = document.createElement('div');
@@ -284,6 +297,13 @@ function renderGrid() {
 
         line.style.left = `${x}px`;
         axis.appendChild(line);
+
+        // Add year label
+        const label = document.createElement('div');
+        label.className = 'grid-year-label';
+        label.textContent = y;
+        label.style.left = `${x}px`;
+        axis.appendChild(label);
     }
 }
 
@@ -341,8 +361,8 @@ function setupInteractions() {
             const finalY = parseFloat(label.style.top);
             let newLayer = Math.round((finalY - topMargin) / layerHeight) + 1;
 
-            // Clamp 1-12
-            newLayer = Math.max(1, Math.min(12, newLayer));
+            // Clamp 1-26
+            newLayer = Math.max(1, Math.min(26, newLayer));
 
             if (newLayer !== parseInt(item.layer)) {
                 item.layer = newLayer;
@@ -371,6 +391,8 @@ function setupInteractions() {
         state.offsetX = 0;
         state.offsetY = 0;
         state.scale = 1;
+        state.horizontalScale = 1;
+        renderTimeline();
         updateTransform();
     };
     document.getElementById('reset-view').style.display = 'flex'; // Show reset button
@@ -382,6 +404,45 @@ function setupInteractions() {
     document.getElementById('add-item-btn').onclick = () => {
         openEditModal(null);
     };
+
+    // Wheel zoom (horizontal only)
+    timelineContainer.addEventListener('wheel', (e) => {
+        e.preventDefault();
+
+        const zoomSpeed = 0.001;
+        const delta = -e.deltaY;
+        const zoomFactor = 1 + delta * zoomSpeed;
+
+        // Get mouse position relative to container
+        const rect = timelineContainer.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+
+        // Calculate the timeline position under the mouse before zoom
+        const totalTime = state.maxYear - state.minYear;
+        const screenWidth = window.innerWidth;
+        const basePixelsPerYear = screenWidth / totalTime;
+        const currentPixelsPerYear = basePixelsPerYear * state.horizontalScale;
+
+        // Position in timeline coordinates (before offset)
+        const timelineX = (mouseX - state.offsetX) / state.scale;
+
+        // Update horizontal scale
+        const newHorizontalScale = Math.max(0.5, Math.min(10, state.horizontalScale * zoomFactor));
+
+        if (newHorizontalScale !== state.horizontalScale) {
+            // Calculate new pixels per year
+            const newPixelsPerYear = basePixelsPerYear * newHorizontalScale;
+
+            // Adjust offset to keep the point under mouse stationary
+            const scaleDiff = newPixelsPerYear / currentPixelsPerYear;
+            const newTimelineX = timelineX * scaleDiff;
+            state.offsetX = mouseX - newTimelineX * state.scale;
+
+            state.horizontalScale = newHorizontalScale;
+            renderTimeline();
+            updateTransform();
+        }
+    }, { passive: false });
 
     // Re-render on resize
     window.addEventListener('resize', () => {
