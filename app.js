@@ -4,8 +4,7 @@ const API_URL = 'https://script.google.com/macros/s/AKfycby9dF0wokSZFkNVcWPD-67L
 let state = {
     items: [], // Sheet1 data
     sheet2Items: [], // Sheet2 data
-    scale: 1,
-    horizontalScale: 1, // Horizontal zoom scale
+    horizontalScale: 4, // Horizontal zoom scale
     offsetX: 0,
     offsetY: 0,
     isDragging: false,
@@ -159,7 +158,7 @@ function renderTimeline() {
     const basePixelsPerYear = screenWidth / totalTime;
     const pixelsPerYear = basePixelsPerYear * state.horizontalScale;
 
-    // 1. Render Sheet2 (Top Section - 26 layers)
+    // 1. Render Sheet2 (Top Section - 31 layers)
     renderSheet2(pixelsPerYear);
 
     // 2. Render Sheet1 (Bottom Section)
@@ -172,8 +171,8 @@ function renderSheet2(pixelsPerYear) {
     const layerHeight = 40;
     const topMargin = 80;
 
-    // Render 26 Horizontal Guide Lines
-    for (let i = 0; i < 26; i++) {
+    // Render 31 Horizontal Guide Lines
+    for (let i = 0; i < 31; i++) {
         const guide = document.createElement('div');
         guide.className = 'layer-guide-line';
         guide.style.top = `${i * layerHeight + topMargin + 20}px`;
@@ -233,7 +232,7 @@ function renderSheet2(pixelsPerYear) {
 }
 
 function renderSheet1(pixelsPerYear) {
-    const sheet1TopOffset = 1210; // Increased for 26 layers (26 * 40 + 60 + margin)
+    const sheet1TopOffset = 1410; // Increased for 31 layers (31 * 40 + 60 + margin)
 
     // Sort items by year
     const sortedItems = [...state.items].sort((a, b) => (parseInt(a.yr) || 0) - (parseInt(b.yr) || 0));
@@ -322,7 +321,7 @@ function setupInteractions() {
             const deltaYRaw = e.clientY - state.startY;
             state.draggedDist += Math.abs(deltaYRaw);
 
-            const deltaY = deltaYRaw / state.scale;
+            const deltaY = deltaYRaw;
             const currentY = ((state.draggingItem.layer - 1) * 40 + 60) + deltaY;
 
             state.draggingEl.style.top = `${currentY}px`;
@@ -361,8 +360,8 @@ function setupInteractions() {
             const finalY = parseFloat(label.style.top);
             let newLayer = Math.round((finalY - topMargin) / layerHeight) + 1;
 
-            // Clamp 1-26
-            newLayer = Math.max(1, Math.min(26, newLayer));
+            // Clamp 1-31
+            newLayer = Math.max(1, Math.min(31, newLayer));
 
             if (newLayer !== parseInt(item.layer)) {
                 item.layer = newLayer;
@@ -390,8 +389,7 @@ function setupInteractions() {
     document.getElementById('reset-view').onclick = () => {
         state.offsetX = 0;
         state.offsetY = 0;
-        state.scale = 1;
-        state.horizontalScale = 1;
+        state.horizontalScale = 4;
         renderTimeline();
         updateTransform();
     };
@@ -424,7 +422,7 @@ function setupInteractions() {
         const currentPixelsPerYear = basePixelsPerYear * state.horizontalScale;
 
         // Position in timeline coordinates (before offset)
-        const timelineX = (mouseX - state.offsetX) / state.scale;
+        const timelineX = mouseX - state.offsetX;
 
         // Update horizontal scale
         const newHorizontalScale = Math.max(0.5, Math.min(10, state.horizontalScale * zoomFactor));
@@ -436,7 +434,7 @@ function setupInteractions() {
             // Adjust offset to keep the point under mouse stationary
             const scaleDiff = newPixelsPerYear / currentPixelsPerYear;
             const newTimelineX = timelineX * scaleDiff;
-            state.offsetX = mouseX - newTimelineX * state.scale;
+            state.offsetX = mouseX - newTimelineX;
 
             state.horizontalScale = newHorizontalScale;
             renderTimeline();
@@ -451,12 +449,12 @@ function setupInteractions() {
 }
 
 function updateTransform() {
-    timelineContent.style.transform = `translate(${state.offsetX}px, ${state.offsetY}px) scale(${state.scale})`;
+    timelineContent.style.transform = `translate(${state.offsetX}px, ${state.offsetY}px)`;
 
     // Axis moves only in X
     const axis = document.getElementById('timeline-axis');
     if (axis) {
-        axis.style.transform = `translate(${state.offsetX}px, 0) scale(${state.scale})`;
+        axis.style.transform = `translate(${state.offsetX}px, 0)`;
     }
 }
 
