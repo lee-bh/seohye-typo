@@ -1,9 +1,9 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycby9dF0wokSZFkNVcWPD-67L4f0Em65wYh5PduxMkVqbpt1kOWjgNwwzKRmwZ6U7wkDH/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwsd2UULk5uY0yrrXPMvaom_pi8HV9QeFLbUrHdsmMsGkesZkL8NoIqNRNiqg2VOMs2/exec';
 
 // State
 let state = {
-    items: [], // Sheet1 data
-    sheet2Items: [], // Sheet2 data
+    items: [], // Sheet3 data
+    sheet4Items: [], // Sheet4 data
     horizontalScale: 4, // Horizontal zoom scale
     offsetX: 0,
     offsetY: 0,
@@ -50,20 +50,20 @@ async function init() {
 async function loadData() {
     showLoading(true);
     try {
-        // Fetch Sheet1
-        const res1 = await fetch(`${API_URL}?action=read&sheet=sheet1`);
+        // Fetch Sheet3
+        const res1 = await fetch(`${API_URL}?action=read&sheet=sheet3`);
         const json1 = await res1.json();
 
-        // Fetch Sheet2
-        const res2 = await fetch(`${API_URL}?action=read&sheet=sheet2`);
+        // Fetch Sheet4
+        const res2 = await fetch(`${API_URL}?action=read&sheet=sheet4`);
         const json2 = await res2.json();
 
         if (json1.status === 'success' && json2.status === 'success') {
             state.items = parseRows(json1.data.headers, json1.data.rows);
-            state.sheet2Items = parseRows(json2.data.headers, json2.data.rows);
+            state.sheet4Items = parseRows(json2.data.headers, json2.data.rows);
 
-            console.log('Sheet1 items:', state.items);
-            console.log('Sheet2 items:', state.sheet2Items);
+            console.log('Sheet3 items:', state.items);
+            console.log('Sheet4 items:', state.sheet4Items);
 
             calculateBounds();
             renderTimeline();
@@ -98,7 +98,7 @@ function useMockData() {
         { _row: 4, nation: '일본', category: '서체', yr: 1957, item: 'Helvetica', info: 'Not Asian but test', link: '', cite: 'Wiki' },
         { _row: 5, nation: '한국', category: '경향', yr: 2000, item: 'Digital Era', info: 'Web fonts', link: '', cite: 'News' }
     ];
-    state.sheet2Items = [
+    state.sheet4Items = [
         { country: '한국', theme: '왕조', begin: 1392, end: 1910, layer: 1, title: '조선시대' },
         { country: '한국', theme: '활자', begin: 1403, end: 1420, layer: 2, title: '계미자' },
         { country: '한국', theme: '활자', begin: 1434, end: 1450, layer: 2, title: '갑인자' },
@@ -112,7 +112,7 @@ function useMockData() {
 }
 
 function calculateBounds() {
-    const allItems = [...state.items, ...state.sheet2Items];
+    const allItems = [...state.items, ...state.sheet4Items];
     if (allItems.length === 0) {
         state.minYear = 1800;
         state.maxYear = 2030;
@@ -124,7 +124,7 @@ function calculateBounds() {
         const y = parseInt(i.yr);
         if (!isNaN(y) && y > 0) years.push(y);
     });
-    state.sheet2Items.forEach(i => {
+    state.sheet4Items.forEach(i => {
         const b = parseInt(i.begin);
         // Handle 'current' as 2026
         let endValue = i.end;
@@ -158,16 +158,16 @@ function renderTimeline() {
     const basePixelsPerYear = screenWidth / totalTime;
     const pixelsPerYear = basePixelsPerYear * state.horizontalScale;
 
-    // 1. Render Sheet2 (Top Section - 31 layers)
-    renderSheet2(pixelsPerYear);
+    // 1. Render Sheet4 (Top Section - 31 layers)
+    renderSheet4(pixelsPerYear);
 
-    // 2. Render Sheet1 (Bottom Section)
-    renderSheet1(pixelsPerYear);
+    // 2. Render Sheet3 (Bottom Section)
+    renderSheet3(pixelsPerYear);
 
     renderGrid();
 }
 
-function renderSheet2(pixelsPerYear) {
+function renderSheet4(pixelsPerYear) {
     const layerHeight = 40;
     const topMargin = 80;
 
@@ -179,7 +179,7 @@ function renderSheet2(pixelsPerYear) {
         timelineContent.appendChild(guide);
     }
 
-    state.sheet2Items.forEach(item => {
+    state.sheet4Items.forEach(item => {
         const begin = parseInt(item.begin);
         // Handle 'current' as 2026
         let endValue = item.end;
@@ -198,7 +198,7 @@ function renderSheet2(pixelsPerYear) {
 
         // Line
         const line = document.createElement('div');
-        line.className = 'sheet2-line';
+        line.className = 'sheet4-line';
         line.id = `line-${item._row}`; // Add ID to update line position during drag
         line.style.left = `${xStart}px`;
         line.style.top = `${y + 20}px`;
@@ -207,7 +207,7 @@ function renderSheet2(pixelsPerYear) {
 
         // Label
         const label = document.createElement('div');
-        label.className = 'sheet2-label';
+        label.className = 'sheet4-label';
         label.style.left = `${xStart}px`;
         label.style.top = `${y}px`;
         label.innerHTML = `
@@ -231,8 +231,8 @@ function renderSheet2(pixelsPerYear) {
     });
 }
 
-function renderSheet1(pixelsPerYear) {
-    const sheet1TopOffset = 1410; // Increased for 31 layers (31 * 40 + 60 + margin)
+function renderSheet3(pixelsPerYear) {
+    const sheet3TopOffset = 1410; // Increased for 31 layers (31 * 40 + 60 + margin)
 
     // Sort items by year
     const sortedItems = [...state.items].sort((a, b) => (parseInt(a.yr) || 0) - (parseInt(b.yr) || 0));
@@ -249,7 +249,7 @@ function renderSheet1(pixelsPerYear) {
         if (isNaN(year)) year = state.minYear;
 
         const x = (year - state.minYear) * pixelsPerYear;
-        const y = sheet1TopOffset + (index * 45); // Simple vertical stacking
+        const y = sheet3TopOffset + (index * 45); // Simple vertical stacking
 
         el.style.left = `${x}px`;
         el.style.top = `${y}px`;
@@ -368,7 +368,7 @@ function setupInteractions() {
                 await updateItemLayer(item._row, newLayer);
             } else if (state.draggedDist < 5) {
                 // It was a click, not a significant drag
-                openSheet2Modal(item);
+                openSheet4Modal(item);
             } else {
                 // Snap back if no change but was a drag
                 renderTimeline();
@@ -395,8 +395,8 @@ function setupInteractions() {
     };
     document.getElementById('reset-view').style.display = 'flex'; // Show reset button
 
-    document.getElementById('add-sheet2-btn').onclick = () => {
-        openSheet2Modal(null);
+    document.getElementById('add-sheet4-btn').onclick = () => {
+        openSheet4Modal(null);
     };
 
     document.getElementById('add-item-btn').onclick = () => {
@@ -486,32 +486,32 @@ function openEditModal(item) {
     modalOverlay.classList.remove('hidden');
 }
 
-function openSheet2Modal(item) {
-    const modalOverlayS2 = document.getElementById('modal-overlay-s2');
-    const modalTitleS2 = document.getElementById('modal-title-s2');
-    const deleteBtnS2 = document.getElementById('delete-btn-s2');
-    const formS2 = document.getElementById('item-form-s2');
+function openSheet4Modal(item) {
+    const modalOverlayS4 = document.getElementById('modal-overlay-s4');
+    const modalTitleS4 = document.getElementById('modal-title-s4');
+    const deleteBtnS4 = document.getElementById('delete-btn-s4');
+    const formS4 = document.getElementById('item-form-s4');
 
     if (item) {
-        modalTitleS2.textContent = '시대상 수정';
-        document.getElementById('edit-row-s2').value = item._row;
-        document.getElementById('edit-country-s2').value = item.country;
-        document.getElementById('edit-theme-s2').value = item.theme;
-        document.getElementById('edit-begin-s2').value = item.begin;
-        document.getElementById('edit-end-s2').value = item.end;
-        document.getElementById('edit-layer-s2').value = item.layer;
-        document.getElementById('edit-title-s2').value = item.title;
-        deleteBtnS2.classList.remove('hidden');
+        modalTitleS4.textContent = '시대상 수정';
+        document.getElementById('edit-row-s4').value = item._row;
+        document.getElementById('edit-country-s4').value = item.country;
+        document.getElementById('edit-theme-s4').value = item.theme;
+        document.getElementById('edit-begin-s4').value = item.begin;
+        document.getElementById('edit-end-s4').value = item.end;
+        document.getElementById('edit-layer-s4').value = item.layer;
+        document.getElementById('edit-title-s4').value = item.title;
+        deleteBtnS4.classList.remove('hidden');
 
-        deleteBtnS2.onclick = () => deleteItem(item._row, 'sheet2');
+        deleteBtnS4.onclick = () => deleteItem(item._row, 'sheet4');
     } else {
-        modalTitleS2.textContent = '시대상 추가';
-        formS2.reset();
-        document.getElementById('edit-row-s2').value = '';
-        deleteBtnS2.classList.add('hidden');
+        modalTitleS4.textContent = '시대상 추가';
+        formS4.reset();
+        document.getElementById('edit-row-s4').value = '';
+        deleteBtnS4.classList.add('hidden');
     }
 
-    modalOverlayS2.classList.remove('hidden');
+    modalOverlayS4.classList.remove('hidden');
 }
 
 function setupForm() {
@@ -520,16 +520,16 @@ function setupForm() {
         modalOverlay.classList.add('hidden');
     };
 
-    // Sheet2 Close
-    document.getElementById('close-modal-s2').onclick = () => {
-        document.getElementById('modal-overlay-s2').classList.add('hidden');
+    // Sheet4 Close
+    document.getElementById('close-modal-s4').onclick = () => {
+        document.getElementById('modal-overlay-s4').classList.add('hidden');
     };
 
     // Overlay clicks
     window.addEventListener('click', (e) => {
         if (e.target === modalOverlay) modalOverlay.classList.add('hidden');
-        const s2Overlay = document.getElementById('modal-overlay-s2');
-        if (e.target === s2Overlay) s2Overlay.classList.add('hidden');
+        const s4Overlay = document.getElementById('modal-overlay-s4');
+        if (e.target === s4Overlay) s4Overlay.classList.add('hidden');
     });
 
     // Sheet1 Submit
@@ -541,11 +541,11 @@ function setupForm() {
         await sendData(action, data);
     };
 
-    // Sheet2 Submit
-    const formS2 = document.getElementById('item-form-s2');
-    formS2.onsubmit = async (e) => {
+    // Sheet4 Submit
+    const formS4 = document.getElementById('item-form-s4');
+    formS4.onsubmit = async (e) => {
         e.preventDefault();
-        const formData = new FormData(formS2);
+        const formData = new FormData(formS4);
         const data = Object.fromEntries(formData.entries());
         const action = data._row ? 'update' : 'create';
         await sendData(action, data);
@@ -557,7 +557,7 @@ async function updateItemLayer(row, newLayer) {
     try {
         const params = new URLSearchParams();
         params.append('action', 'update');
-        params.append('sheet', 'sheet2');
+        params.append('sheet', 'sheet4');
         params.append('_row', row);
         params.append('layer', newLayer);
 
@@ -617,12 +617,12 @@ async function sendData(action, data) {
     }
 }
 
-async function deleteItem(row, sheetName = 'sheet1') {
+async function deleteItem(row, sheetName = 'sheet3') {
     if (!confirm('Are you sure you want to delete this item?')) return;
 
     showLoading(true);
     modalOverlay.classList.add('hidden');
-    document.getElementById('modal-overlay-s2').classList.add('hidden');
+    document.getElementById('modal-overlay-s4').classList.add('hidden');
 
     try {
         const params = new URLSearchParams();

@@ -16,13 +16,13 @@
 <body>
     <div id="app">
         <header>
-            <h1>동아시아 타이포그래피 연표</h1>
+            <h1>東アジア・タイポグラフィ年表</h1>
             <div class="controls">
                 <button id="zoom-in" class="icon-btn" aria-label="Zoom In">+</button>
                 <button id="zoom-out" class="icon-btn" aria-label="Zoom Out">-</button>
                 <button id="reset-view" class="icon-btn" aria-label="Reset View">↺</button>
-                <button id="add-sheet2-btn" class="primary-btn">시대상 신규</button>
-                <button id="add-item-btn" class="primary-btn">신규추가</button>
+                <button id="add-sheet4-btn" class="primary-btn">時代区分（新規）</button>
+                <button id="add-item-btn" class="primary-btn">時代区分（追加）</button>
             </div>
         </header>
 
@@ -37,67 +37,67 @@
         <div id="modal-overlay" class="hidden">
             <div class="modal">
                 <div class="modal-header">
-                    <h2 id="modal-title">항목 수정</h2>
+                    <h2 id="modal-title">項目編集</h2>
                     <button id="close-modal" class="close-btn">&times;</button>
                 </div>
                 <form id="item-form">
                     <input type="hidden" name="_row" id="edit-row">
 
                     <div class="form-group">
-                        <label for="nation">국가선택</label>
+                        <label for="nation">国</label>
                         <select name="nation" id="edit-nation" required>
-                            <option value="한국">한국</option>
-                            <option value="중국">중국</option>
-                            <option value="일본">일본</option>
-                            <option value="기타">기타(직접)</option>
+                            <option value="韓国">韓国</option>
+                            <option value="中国">中国</option>
+                            <option value="日本">日本</option>
+                            <option value="その他">その他</option>
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label for="category">Category</label>
+                        <label for="category">カテゴリー</label>
                         <select name="category" id="edit-category" required>
-                            <option value="기관">기관</option>
-                            <option value="학회">학회</option>
-                            <option value="출판">출판</option>
-                            <option value="전시">전시</option>
-                            <option value="교육">교육</option>
-                            <option value="연구">연구</option>
-                            <option value="서체">서체</option>
-                            <option value="표준">표준</option>
-                            <option value="제도">제도</option>
-                            <option value="정책">정책</option>
-                            <option value="서비스">서비스</option>
-                            <option value="경향">경향</option>
-                            <option value="기술">기술</option>
-                            <option value="이론">이론</option>
-                            <option value="운동">운동</option>
-                            <option value="광고">광고</option>
-                            <option value="예술">예술</option>
+                            <option value="条約">条約</option>
+                            <option value="学会">学会</option>
+                            <option value="出版">出版</option>
+                            <option value="展示">展示</option>
+                            <option value="教育">教育</option>
+                            <option value="研究">研究</option>
+                            <option value="字体">字体</option>
+                            <option value="標準">標準</option>
+                            <option value="制度">制度</option>
+                            <option value="政策">政策</option>
+                            <option value="サービス">サービス</option>
+                            <option value="傾向">傾向</option>
+                            <option value="技術">技術</option>
+                            <option value="理論">理論</option>
+                            <option value="運動">運動</option>
+                            <option value="広告">広告</option>
+                            <option value="芸術">芸術</option>
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label for="yr">Year</label>
+                        <label for="yr">年</label>
                         <input type="number" name="yr" id="edit-yr" required placeholder="e.g. 1443">
                     </div>
 
                     <div class="form-group">
-                        <label for="item">Item Name</label>
+                        <label for="item">項目名</label>
                         <input type="text" name="item" id="edit-item" required placeholder="Item Title">
                     </div>
 
                     <div class="form-group">
-                        <label for="info">Description</label>
+                        <label for="info">説明</label>
                         <textarea name="info" id="edit-info" rows="3" placeholder="Details..."></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label for="link">Link</label>
+                        <label for="link">リンク</label>
                         <input type="url" name="link" id="edit-link" placeholder="https://...">
                     </div>
 
                     <div class="form-group">
-                        <label for="cite">Citation</label>
+                        <label for="cite">引用</label>
                         <input type="text" name="cite" id="edit-cite" placeholder="Source">
                     </div>
 
@@ -115,50 +115,50 @@
         </div>
     </div>
 
-    <!-- Sheet2 Modal -->
-    <div id="modal-overlay-s2" class="hidden">
+    <!-- Sheet4 Modal -->
+    <div id="modal-overlay-s4" class="hidden">
         <div class="modal">
             <div class="modal-header">
-                <h2 id="modal-title-s2">시대상 추가/수정</h2>
-                <button id="close-modal-s2" class="close-btn">&times;</button>
+                <h2 id="modal-title-s4">時代区分（新規）</h2>
+                <button id="close-modal-s4" class="close-btn">&times;</button>
             </div>
-            <form id="item-form-s2">
-                <input type="hidden" name="_row" id="edit-row-s2">
-                <input type="hidden" name="sheet" value="sheet2">
+            <form id="item-form-s4">
+                <input type="hidden" name="_row" id="edit-row-s4">
+                <input type="hidden" name="sheet" value="sheet4">
 
                 <div class="form-group">
-                    <label for="country">국가 (Country)</label>
-                    <input type="text" name="country" id="edit-country-s2" required placeholder="e.g. 한국">
+                    <label for="country">国</label>
+                    <input type="text" name="country" id="edit-country-s4" required placeholder="e.g. 한국">
                 </div>
 
                 <div class="form-group">
-                    <label for="theme">대주제 (Theme)</label>
-                    <input type="text" name="theme" id="edit-theme-s2" required placeholder="e.g. 왕조">
+                    <label for="theme">大項目</label>
+                    <input type="text" name="theme" id="edit-theme-s4" required placeholder="e.g. 왕조">
                 </div>
 
                 <div class="form-group">
-                    <label for="begin">시작년도 (Begin Year)</label>
-                    <input type="number" name="begin" id="edit-begin-s2" required placeholder="e.g. 1392">
+                    <label for="begin">開始年</label>
+                    <input type="number" name="begin" id="edit-begin-s4" required placeholder="e.g. 1392">
                 </div>
 
                 <div class="form-group">
-                    <label for="end">종료년도 (End Year)</label>
-                    <input type="number" name="end" id="edit-end-s2" required placeholder="e.g. 1910">
+                    <label for="end">終了年</label>
+                    <input type="number" name="end" id="edit-end-s4" required placeholder="e.g. 1910">
                 </div>
 
                 <div class="form-group">
-                    <label for="layer">레이어 (Layer 1-12)</label>
-                    <input type="number" name="layer" id="edit-layer-s2" required min="1" max="12" placeholder="1-12">
+                    <label for="layer">レイヤー(1-31)</label>
+                    <input type="number" name="layer" id="edit-layer-s4" required min="1" max="31" placeholder="1-31">
                 </div>
 
                 <div class="form-group">
-                    <label for="title">내용 (Title)</label>
-                    <input type="text" name="title" id="edit-title-s2" required placeholder="e.g. 조선시대">
+                    <label for="title">内容</label>
+                    <input type="text" name="title" id="edit-title-s4" required placeholder="e.g. 조선시대">
                 </div>
 
                 <div class="modal-actions">
-                    <button type="button" id="delete-btn-s2" class="danger-btn hidden">Delete</button>
-                    <button type="submit" class="primary-btn">Save Changes</button>
+                    <button type="button" id="delete-btn-s4" class="danger-btn hidden">削除</button>
+                    <button type="submit" class="primary-btn">保存</button>
                 </div>
             </form>
         </div>
