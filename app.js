@@ -399,6 +399,10 @@ function setupInteractions() {
         openSheet4Modal(null);
     };
 
+    document.getElementById('about-btn').onclick = () => {
+        document.getElementById('modal-overlay-about').classList.remove('hidden');
+    };
+
     document.getElementById('add-item-btn').onclick = () => {
         openEditModal(null);
     };
@@ -525,11 +529,18 @@ function setupForm() {
         document.getElementById('modal-overlay-s4').classList.add('hidden');
     };
 
+    // About Close
+    document.getElementById('close-modal-about').onclick = () => {
+        document.getElementById('modal-overlay-about').classList.add('hidden');
+    };
+
     // Overlay clicks
     window.addEventListener('click', (e) => {
         if (e.target === modalOverlay) modalOverlay.classList.add('hidden');
         const s4Overlay = document.getElementById('modal-overlay-s4');
         if (e.target === s4Overlay) s4Overlay.classList.add('hidden');
+        const aboutOverlay = document.getElementById('modal-overlay-about');
+        if (e.target === aboutOverlay) aboutOverlay.classList.add('hidden');
     });
 
     // Sheet1 Submit

@@ -283,7 +283,8 @@ button {
 
 /* Modal */
 #modal-overlay,
-#modal-overlay-s4 {
+#modal-overlay-s4,
+#modal-overlay-about {
     position: fixed;
     top: 0;
     left: 0;
@@ -300,7 +301,8 @@ button {
 }
 
 #modal-overlay.hidden,
-#modal-overlay-s4.hidden {
+#modal-overlay-s4.hidden,
+#modal-overlay-about.hidden {
     opacity: 0;
     pointer-events: none;
 }
@@ -316,7 +318,8 @@ button {
 }
 
 #modal-overlay.hidden .modal,
-#modal-overlay-s4.hidden .modal {
+#modal-overlay-s4.hidden .modal,
+#modal-overlay-about.hidden .modal {
     transform: translateY(20px);
 }
 
@@ -401,4 +404,59 @@ button {
     to {
         transform: rotate(360deg);
     }
+}
+
+/* About Modal Specifically */
+.about-modal {
+    max-width: 600px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.about-modal .modal-body {
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+/* Custom scrollbar for About modal */
+.about-modal .modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.about-modal .modal-body::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.about-modal .modal-body::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+.about-content {
+    line-height: 1.8;
+    color: #ccc;
+    font-size: 0.95rem;
+}
+
+.about-content p {
+    margin-bottom: 24px;
+}
+
+.about-content .note {
+    font-size: 0.85rem;
+    color: #888;
+    margin-bottom: 12px;
+}
+
+.about-content .credits {
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.9rem;
+    color: var(--accent-color);
+}
+
+.about-content .credits p {
+    margin-bottom: 8px;
 }
